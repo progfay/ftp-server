@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+
+	"github.com/progfay/ftp-server/ftp/transfer"
 )
 
 type ftpServer struct {
@@ -51,16 +53,16 @@ func handleConnection(c net.Conn) {
 	defer c.Close()
 
 	input := bufio.NewScanner(c)
-	fmt.Fprintln(c, readyForNewUser)
+	fmt.Fprintln(c, transfer.ReadyForNewUser)
 	conn := newftpConn(c)
 
 	for input.Scan() {
-		req := parse(input.Text())
+		req := transfer.ParseRequest(input.Text())
 
 		fmt.Println()
 		res := conn.handle(req)
 		conn.Reply(res)
-		if res.closing {
+		if res.Closing {
 			break
 		}
 	}

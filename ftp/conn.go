@@ -3,6 +3,8 @@ package ftp
 import (
 	"fmt"
 	"net"
+
+	"github.com/progfay/ftp-server/ftp/transfer"
 )
 
 type state struct {
@@ -26,7 +28,7 @@ func newftpConn(ctrlConn net.Conn) ftpConn {
 	}
 }
 
-var commandHanderMap = map[string]func(*ftpConn, request) response{
+var commandHanderMap = map[string]func(*ftpConn, transfer.Request) transfer.Response{
 	"USER": handleUSER,
 	"PASS": handlePASS,
 	"PORT": handlePORT,
@@ -45,24 +47,24 @@ var commandHanderMap = map[string]func(*ftpConn, request) response{
 	"PASV": handlePASV,
 }
 
-func (conn *ftpConn) handle(req request) response {
+func (conn *ftpConn) handle(req transfer.Request) transfer.Response {
 	fmt.Printf("%s >>> %s\n", conn.state.name, req.String())
-	handler, ok := commandHanderMap[req.command]
+	handler, ok := commandHanderMap[req.Command]
 	if !ok {
-		return newResponse(notImplementedAtThisSite)
+		return transfer.NewResponse(transfer.NotImplementedAtThisSite)
 	}
 
 	return handler(conn, req)
 }
 
-func (conn *ftpConn) Reply(res response) {
+func (conn *ftpConn) Reply(res transfer.Response) {
 	fmt.Printf("%s <<< %s\n", conn.state.name, res.String())
-	fmt.Fprintf(conn.ctrlConn, "%s\n", res.message)
+	fmt.Fprintf(conn.ctrlConn, "%s\n", res.Message)
 
-	if res.hasData {
-		fmt.Fprint(conn.dataConn, res.data)
+	if res.HasData {
+		fmt.Fprint(conn.dataConn, res.Data)
 		conn.dataConn.Close()
-		fmt.Printf("%s <<< %s\n", conn.state.name, closingControlConnection)
-		fmt.Fprintf(conn.ctrlConn, "%s\n", closingDataConnection)
+		fmt.Printf("%s <<< %s\n", conn.state.name, transfer.ClosingControlConnection)
+		fmt.Fprintf(conn.ctrlConn, "%s\n", transfer.ClosingDataConnection)
 	}
 }
