@@ -28,7 +28,7 @@ func newftpConn(ctrlConn net.Conn) ftpConn {
 	}
 }
 
-var commandHanderMap = map[string]func(*ftpConn, transfer.Request) transfer.Response{
+var commandHandlerMap = map[string]func(*ftpConn, transfer.Request) transfer.Response{
 	"USER": handleUSER,
 	"PASS": handlePASS,
 	"PORT": handlePORT,
@@ -49,7 +49,7 @@ var commandHanderMap = map[string]func(*ftpConn, transfer.Request) transfer.Resp
 
 func (conn *ftpConn) handle(req transfer.Request) transfer.Response {
 	fmt.Printf("%s >>> %s\n", conn.state.name, req.String())
-	handler, ok := commandHanderMap[req.Command]
+	handler, ok := commandHandlerMap[req.Command]
 	if !ok {
 		return transfer.NewResponse(transfer.NotImplementedAtThisSite)
 	}
