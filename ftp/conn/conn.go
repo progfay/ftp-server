@@ -2,6 +2,7 @@ package conn
 
 import (
 	"fmt"
+	"log"
 	"net"
 
 	"github.com/progfay/ftp-server/ftp/os"
@@ -49,7 +50,7 @@ var commandHandlerMap = map[string]func(*Conn, transfer.Request) transfer.Respon
 }
 
 func (conn *Conn) Handle(req transfer.Request) transfer.Response {
-	fmt.Printf("%s >>> %s\n", conn.state.name, req.String())
+	log.Printf("%s >>> %s\n", conn.state.name, req.String())
 	handler, ok := commandHandlerMap[req.Command]
 	if !ok {
 		return transfer.NewResponse(transfer.NotImplementedAtThisSite)
@@ -59,13 +60,13 @@ func (conn *Conn) Handle(req transfer.Request) transfer.Response {
 }
 
 func (conn *Conn) Reply(res transfer.Response) {
-	fmt.Printf("%s <<< %s\n", conn.state.name, res.String())
+	log.Printf("%s <<< %s\n", conn.state.name, res.String())
 	fmt.Fprintf(conn.ctrlConn, "%s\n", res.Message)
 
 	if res.HasData {
 		fmt.Fprint(conn.dataConn, res.Data)
 		conn.dataConn.Close()
-		fmt.Printf("%s <<< %s\n", conn.state.name, transfer.ClosingControlConnection)
+		log.Printf("%s <<< %s\n", conn.state.name, transfer.ClosingControlConnection)
 		fmt.Fprintf(conn.ctrlConn, "%s\n", transfer.ClosingDataConnection)
 	}
 }

@@ -36,7 +36,7 @@ func (s *Server) Listen() {
 				break
 			}
 
-			go handleConnection(conn)
+			go s.handleConnection(conn)
 		}
 		close(s.close)
 	}()
@@ -50,7 +50,7 @@ func (s *Server) Cancel() <-chan struct{} {
 	return s.close
 }
 
-func handleConnection(c net.Conn) {
+func (s *Server) handleConnection(c net.Conn) {
 	defer c.Close()
 
 	input := bufio.NewScanner(c)
@@ -60,7 +60,7 @@ func handleConnection(c net.Conn) {
 	for input.Scan() {
 		req := transfer.ParseRequest(input.Text())
 
-		fmt.Println()
+		log.Println()
 		res := conn.Handle(req)
 		conn.Reply(res)
 		if res.Closing {
