@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/progfay/ftp-server/ftp/conn"
 	"github.com/progfay/ftp-server/ftp/transfer"
 )
 
@@ -54,13 +55,13 @@ func handleConnection(c net.Conn) {
 
 	input := bufio.NewScanner(c)
 	fmt.Fprintln(c, transfer.ReadyForNewUser)
-	conn := newftpConn(c)
+	conn := conn.New(c)
 
 	for input.Scan() {
 		req := transfer.ParseRequest(input.Text())
 
 		fmt.Println()
-		res := conn.handle(req)
+		res := conn.Handle(req)
 		conn.Reply(res)
 		if res.Closing {
 			break

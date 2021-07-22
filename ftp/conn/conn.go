@@ -1,34 +1,35 @@
-package ftp
+package conn
 
 import (
 	"fmt"
 	"net"
 
+	"github.com/progfay/ftp-server/ftp/os"
 	"github.com/progfay/ftp-server/ftp/transfer"
 )
 
 type state struct {
 	name string
-	cwd  Cwd
+	cwd  os.Cwd
 }
 
-type ftpConn struct {
+type Conn struct {
 	ctrlConn net.Conn
 	dataConn net.Conn
 	state    state
 }
 
-func newftpConn(ctrlConn net.Conn) ftpConn {
-	return ftpConn{
+func New(ctrlConn net.Conn) Conn {
+	return Conn{
 		ctrlConn: ctrlConn,
 		state: state{
 			name: "anonymous",
-			cwd:  newCwd(),
+			cwd:  os.NewCwd(),
 		},
 	}
 }
 
-var commandHandlerMap = map[string]func(*ftpConn, transfer.Request) transfer.Response{
+var commandHandlerMap = map[string]func(*Conn, transfer.Request) transfer.Response{
 	"USER": handleUSER,
 	"PASS": handlePASS,
 	"PORT": handlePORT,
@@ -47,7 +48,7 @@ var commandHandlerMap = map[string]func(*ftpConn, transfer.Request) transfer.Res
 	"PASV": handlePASV,
 }
 
-func (conn *ftpConn) handle(req transfer.Request) transfer.Response {
+func (conn *Conn) Handle(req transfer.Request) transfer.Response {
 	fmt.Printf("%s >>> %s\n", conn.state.name, req.String())
 	handler, ok := commandHandlerMap[req.Command]
 	if !ok {
@@ -57,7 +58,7 @@ func (conn *ftpConn) handle(req transfer.Request) transfer.Response {
 	return handler(conn, req)
 }
 
-func (conn *ftpConn) Reply(res transfer.Response) {
+func (conn *Conn) Reply(res transfer.Response) {
 	fmt.Printf("%s <<< %s\n", conn.state.name, res.String())
 	fmt.Fprintf(conn.ctrlConn, "%s\n", res.Message)
 

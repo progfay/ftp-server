@@ -1,4 +1,4 @@
-package ftp
+package conn
 
 import (
 	"fmt"
@@ -11,16 +11,16 @@ import (
 	"github.com/progfay/ftp-server/ftp/transfer"
 )
 
-func handleUSER(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleUSER(conn *Conn, req transfer.Request) transfer.Response {
 	conn.state.name = req.Message
 	return transfer.NewResponse(transfer.NeedPassword)
 }
 
-func handlePASS(conn *ftpConn, req transfer.Request) transfer.Response {
+func handlePASS(conn *Conn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(transfer.UserLoggedIn)
 }
 
-func handlePORT(conn *ftpConn, req transfer.Request) transfer.Response {
+func handlePORT(conn *Conn, req transfer.Request) transfer.Response {
 	hostPort := strings.Split(req.Message, ",")
 	if len(hostPort) != 6 {
 		return transfer.NewResponse(transfer.WrongArguments)
@@ -46,7 +46,7 @@ func handlePORT(conn *ftpConn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(transfer.Ok)
 }
 
-func handleLIST(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleLIST(conn *Conn, req transfer.Request) transfer.Response {
 	files, err := conn.state.cwd.Ls(req.Message)
 	if err != nil {
 		log.Println(err)
@@ -66,7 +66,7 @@ func handleLIST(conn *ftpConn, req transfer.Request) transfer.Response {
 	return res
 }
 
-func handleNLST(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleNLST(conn *Conn, req transfer.Request) transfer.Response {
 	files, err := conn.state.cwd.Ls(req.Message)
 	if err != nil {
 		log.Println(err)
@@ -82,7 +82,7 @@ func handleNLST(conn *ftpConn, req transfer.Request) transfer.Response {
 	return res
 }
 
-func handleCWD(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleCWD(conn *Conn, req transfer.Request) transfer.Response {
 	err := conn.state.cwd.Cd(req.Message)
 	if err != nil {
 		return transfer.NewResponse(transfer.WrongArguments)
@@ -90,19 +90,19 @@ func handleCWD(conn *ftpConn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(transfer.FileActionOk)
 }
 
-func handlePWD(conn *ftpConn, req transfer.Request) transfer.Response {
+func handlePWD(conn *Conn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(fmt.Sprintf(transfer.Created, conn.state.cwd.Pwd()))
 }
 
-func handleSIZE(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleSIZE(conn *Conn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(transfer.NotImplementedAtThisSite)
 }
 
-func handleSYST(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleSYST(conn *Conn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(fmt.Sprintf(transfer.NameSystemType, "UNIX"))
 }
 
-func handleRETR(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleRETR(conn *Conn, req transfer.Request) transfer.Response {
 	data, err := conn.state.cwd.Get(req.Message)
 	if err != nil {
 		log.Println(err)
@@ -113,7 +113,7 @@ func handleRETR(conn *ftpConn, req transfer.Request) transfer.Response {
 	return res
 }
 
-func handleSTOR(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleSTOR(conn *Conn, req transfer.Request) transfer.Response {
 	conn.Reply(transfer.NewResponse(transfer.FileStatusOk))
 	data, err := ioutil.ReadAll(conn.dataConn)
 	if err != nil {
@@ -128,24 +128,24 @@ func handleSTOR(conn *ftpConn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(transfer.ClosingDataConnection)
 }
 
-func handleNOOP(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleNOOP(conn *Conn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(transfer.Ok)
 }
 
-func handleQUIT(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleQUIT(conn *Conn, req transfer.Request) transfer.Response {
 	res := transfer.NewResponse(transfer.ClosingControlConnection)
 	res.Close()
 	return res
 }
 
-func handleFEAT(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleFEAT(conn *Conn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(transfer.NotImplemented)
 }
 
-func handleEPSV(conn *ftpConn, req transfer.Request) transfer.Response {
+func handleEPSV(conn *Conn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(transfer.NotImplemented)
 }
 
-func handlePASV(conn *ftpConn, req transfer.Request) transfer.Response {
+func handlePASV(conn *Conn, req transfer.Request) transfer.Response {
 	return transfer.NewResponse(transfer.NotImplemented)
 }

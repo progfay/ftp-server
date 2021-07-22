@@ -1,4 +1,4 @@
-package ftp
+package os
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ type Cwd struct {
 	path string
 }
 
-func newCwd() Cwd {
+func NewCwd() Cwd {
 	return Cwd{path: os.Getenv("HOME")}
 }
 
