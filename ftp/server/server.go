@@ -2,6 +2,7 @@ package server
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -15,8 +16,9 @@ type Server struct {
 	close    chan struct{}
 }
 
-func New(url string) (*Server, error) {
-	listener, err := net.Listen("tcp", url)
+func New(ctx context.Context, url string) (*Server, error) {
+	var lc net.ListenConfig
+	listener, err := lc.Listen(ctx, "tcp", url)
 	if err != nil {
 		return nil, err
 	}
