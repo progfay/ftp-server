@@ -9,6 +9,7 @@ import (
 type hash [sha256.Size]byte
 
 const salt = "progfay/ftp-server"
+
 var usernamePasswordHashMap = map[string]hash{
 	"progfay": toHash("password"),
 }
@@ -18,7 +19,7 @@ func toHash(str string) hash {
 }
 
 var (
-	UserNotExists = errors.New("user not exists")
+	UserNotExists     = errors.New("user not exists")
 	IncorrectPassword = errors.New("incorrect password")
 )
 
