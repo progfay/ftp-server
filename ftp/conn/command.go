@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/progfay/ftp-server/ftp/auth"
 	"github.com/progfay/ftp-server/ftp/transfer"
 )
 
@@ -17,6 +18,11 @@ func handleUSER(conn *Conn, req transfer.Request) transfer.Response {
 }
 
 func handlePASS(conn *Conn, req transfer.Request) transfer.Response {
+	password := req.Message
+	err := auth.Verify(conn.state.name, password)
+	if err != nil {
+		return transfer.NewResponse(transfer.NotLoggedIn)
+	}
 	return transfer.NewResponse(transfer.UserLoggedIn)
 }
 
