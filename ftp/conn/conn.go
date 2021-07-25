@@ -10,8 +10,9 @@ import (
 )
 
 type state struct {
-	name string
-	cwd  os.Cwd
+	name     string
+	verified bool
+	cwd      os.Cwd
 }
 
 type Conn struct {

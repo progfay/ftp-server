@@ -23,10 +23,15 @@ func handlePASS(conn *Conn, req transfer.Request) transfer.Response {
 	if err != nil {
 		return transfer.NewResponse(transfer.NotLoggedIn)
 	}
+	conn.state.verified = true
 	return transfer.NewResponse(transfer.UserLoggedIn)
 }
 
 func handlePORT(conn *Conn, req transfer.Request) transfer.Response {
+	if !conn.state.verified {
+		return transfer.NewResponse(transfer.ActionNotTaken)
+	}
+
 	hostPort := strings.Split(req.Message, ",")
 	if len(hostPort) != 6 {
 		return transfer.NewResponse(transfer.WrongArguments)
@@ -53,6 +58,10 @@ func handlePORT(conn *Conn, req transfer.Request) transfer.Response {
 }
 
 func handleLIST(conn *Conn, req transfer.Request) transfer.Response {
+	if !conn.state.verified {
+		return transfer.NewResponse(transfer.ActionNotTaken)
+	}
+
 	files, err := conn.state.cwd.Ls(req.Message)
 	if err != nil {
 		log.Println(err)
@@ -73,6 +82,10 @@ func handleLIST(conn *Conn, req transfer.Request) transfer.Response {
 }
 
 func handleNLST(conn *Conn, req transfer.Request) transfer.Response {
+	if !conn.state.verified {
+		return transfer.NewResponse(transfer.ActionNotTaken)
+	}
+
 	files, err := conn.state.cwd.Ls(req.Message)
 	if err != nil {
 		log.Println(err)
@@ -89,6 +102,10 @@ func handleNLST(conn *Conn, req transfer.Request) transfer.Response {
 }
 
 func handleCWD(conn *Conn, req transfer.Request) transfer.Response {
+	if !conn.state.verified {
+		return transfer.NewResponse(transfer.ActionNotTaken)
+	}
+
 	err := conn.state.cwd.Cd(req.Message)
 	if err != nil {
 		return transfer.NewResponse(transfer.WrongArguments)
@@ -97,18 +114,34 @@ func handleCWD(conn *Conn, req transfer.Request) transfer.Response {
 }
 
 func handlePWD(conn *Conn, req transfer.Request) transfer.Response {
+	if !conn.state.verified {
+		return transfer.NewResponse(transfer.ActionNotTaken)
+	}
+
 	return transfer.NewResponse(fmt.Sprintf(transfer.Created, conn.state.cwd.Pwd()))
 }
 
 func handleSIZE(conn *Conn, req transfer.Request) transfer.Response {
+	if !conn.state.verified {
+		return transfer.NewResponse(transfer.ActionNotTaken)
+	}
+
 	return transfer.NewResponse(transfer.NotImplementedAtThisSite)
 }
 
 func handleSYST(conn *Conn, req transfer.Request) transfer.Response {
+	if !conn.state.verified {
+		return transfer.NewResponse(transfer.ActionNotTaken)
+	}
+
 	return transfer.NewResponse(fmt.Sprintf(transfer.NameSystemType, "UNIX"))
 }
 
 func handleRETR(conn *Conn, req transfer.Request) transfer.Response {
+	if !conn.state.verified {
+		return transfer.NewResponse(transfer.ActionNotTaken)
+	}
+
 	data, err := conn.state.cwd.Get(req.Message)
 	if err != nil {
 		log.Println(err)
@@ -120,6 +153,9 @@ func handleRETR(conn *Conn, req transfer.Request) transfer.Response {
 }
 
 func handleSTOR(conn *Conn, req transfer.Request) transfer.Response {
+	if !conn.state.verified {
+		return transfer.NewResponse(transfer.ActionNotTaken)
+	}
 	conn.Reply(transfer.NewResponse(transfer.FileStatusOk))
 	data, err := ioutil.ReadAll(conn.dataConn)
 	if err != nil {
@@ -139,6 +175,7 @@ func handleNOOP(conn *Conn, req transfer.Request) transfer.Response {
 }
 
 func handleQUIT(conn *Conn, req transfer.Request) transfer.Response {
+
 	res := transfer.NewResponse(transfer.ClosingControlConnection)
 	res.Close()
 	return res

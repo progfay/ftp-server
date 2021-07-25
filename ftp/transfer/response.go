@@ -36,7 +36,7 @@ const (
 	NotImplementedForParameter = "504 Command not implemented for that parameter."
 	NotLoggedIn                = "530 Not logged in."
 	NeedAccountForStoringFiles = "532 Need account for storing files."
-	FileNotFound               = "550 Requested action not taken."
+	ActionNotTaken             = "550 Requested action not taken."
 	UnknownPageType            = "551 Requested action aborted: page type unknown."
 	NotEnoughSpace             = "552 Requested file action aborted."
 	DisallowedFileName         = "553 Requested action not taken."
